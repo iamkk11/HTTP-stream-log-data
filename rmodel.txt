@@ -1,0 +1,33 @@
+#Curl on terminal
+curl -X POST -d '{"Arr_time": 319373, "Del_Time": 2623, "Byte_Size": 282765}' -H 'Content-Type: application/json' localhost:8000/predict
+
+#R model
+knn.fit<-train(seg_dur ~ ., data = gtrain,method='knn')
+
+#Saving your R model
+save(knn.fit, file='knn_model.RData')
+
+#Creating input data stream
+e_same2<- subset(e_same, select = -c(seg_dur))[1:20,]
+write.table(e_same2, file = "e.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
+
+#API.R file
+library(class)
+library(jsonlite)
+library(varhandle)
+load("knn_model.RData")
+#* @post /predict
+predict.seg_dur <- function(Arr_time,Del_Time,Byte_Size) 
+  {
+  data <- data.frame(Arr_time=Arr_time,Del_Time=Del_Time,Byte_Size=Byte_Size)
+  prediction <- predict(knn.fit, data)
+  return(seg_dur=(prediction))
+}
+
+#Opening API service
+
+library(plumber)
+r <- plumb("API.R")
+r$run(port=8000)
+
+
