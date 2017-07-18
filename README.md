@@ -1,2 +1,1 @@
-# thesis-code
-Code from my MSc thesis
+# HTTP DASH video log data
